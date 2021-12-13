@@ -11,11 +11,19 @@ class Binance:
         self.client = Client(API_KEY, SECRET_KEY)
 
     def getAllTickers(self):
-        return self.client.get_all_tickers()
+        ticker = self.client.get_all_tickers()
+        symbols = list()
+        for symbol in ticker:
+            symbols.append(symbol['symbol'])
+        return symbols
 
     #Retorna un listado de cryptomonedas disponibles en Binance
     def getAllCoins(self):
-        return self.client.get_all_coins_info()
+        c = self.client.get_all_coins_info()
+        coins = list()
+        for coin in c:
+            coins.append(coin['coin'])
+        return coins
 
     def getClient(self):
         return self.client
@@ -66,6 +74,7 @@ class Binance:
 
     def alert(self,msg):
         print('Recibido',msg)
+
 
 
 class WebSocketBinance:

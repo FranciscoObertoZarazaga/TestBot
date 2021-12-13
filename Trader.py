@@ -4,23 +4,21 @@ import numpy as np
 
 class Trader:
 
-    def __init__(self,symbol):
-        self.wallet = Wallet(symbol)
-        self.binance = Binance()
-        self.symbol = symbol
+    def __init__(self):
+        self.wallet = Wallet()
         self.indoor = False
         self.buy_price = 0
 
-    def buy(self,price, time):
+    def buy(self,price, time, coin):
         if self.wallet.isPayable():
-            self.wallet.pay(price,time)
+            self.wallet.pay(price,time, coin)
             self.indoor = True
             self.buy_price = price
 
 
-    def sell(self,price, time):
-        if self.wallet.isCollectible():
-            reward = self.wallet.collect(price, time)
+    def sell(self,price, time, coin):
+        if self.wallet.isPositive(coin):
+            reward = self.wallet.collect(price, time, coin)
             self.indoor = False
             return reward
 

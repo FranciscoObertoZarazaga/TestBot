@@ -1,67 +1,72 @@
-from SqueezeMomentumIndicator import *
-from Indicator import *
-from HistoricalKlines import HistoricalKlines
+import random
+import pandas as pd
+from HistoricalKlines import *
 from Trader import Trader
 from binance.enums import *
 from datetime import datetime
 from Strategy import *
-import matplotlib.pyplot as plt
 import warnings
 warnings.filterwarnings("ignore")
 
 
-symbol = 'BTCUSDT'
+symbol = ['BTCUSDT']
 start_str = '7 year ago'
 end_str = None
-interval = KLINE_INTERVAL_1HOUR
-src = 'klines/4hour_kline_btc.csv'
+interval = KLINE_INTERVAL_4HOUR
 
-hk = HistoricalKlines(symbol=symbol,start_str=start_str,end_str=end_str, interval=interval,src=src)
-kline = hk.getKlines()
+data, l = getMultipleHistoricalKlines(symbol, start_str, end_str, interval)
 
-kline['sm'] = SqueezeMomentumIndicator(kline)
-kline['isSm'] = isSqueeze(kline)
-kline['adx'], kline['di+'], kline['di-'] = adxIndicator(kline)
-kline['rsi'] = rsiIndicator(kline,20)
-kline['sma'] = smaIndicator(kline,10)
-kline['ema'] = emaIndicator(kline,10)
-kline['bbh'], kline['bbm'], kline['bbl'] = bollingerBandsIndicator(kline)
-kline.dropna(inplace=True)
-
-trader = Trader(symbol)
+for sym in symbol:
+    data[sym]['trader'] = Trader()
 
 buy_price = 0
-signal = list()
-for i in range(len(kline)):
-    if i < 2 or i >= len(kline):
-        signal.append(0)
+for i in range(l):
+    if i < 2 or i >= l:
         continue
 
-    price = kline['Close'][i]
-    time = kline.index[i]
-    indoor = trader.indoor
+    for sym in symbol:
+        df = data[sym]['kl']
+        trader = data[sym]['trader']
+        coin = sym.replace('USDT','')
+        price = df['Close'][i]
+        #price = random.uniform(df['Low'][i],df['High'][i])
+        #price = (df['Low'][i]+df['High'][i]) / 2
+        time = df.index[i]
+        indoor = trader.indoor
 
-    points = 0
-    points += WinStrategy(kline, i)
-    points -= 1 if price < buy_price * .0 else 0
+        points = 0
+        points += WinStrategy(df, i)
 
-    if (indoor and points < 0) or (not indoor and points > 0):
-        signal.append(points)
-    else:
-        signal.append(0)
+        if points > 0:
+            trader.buy(price, time, coin)
+            buy_price = price
+        elif points < 0:
+            trader.sell(price, time, coin)
+            buy_price = 0
 
-    if points > 0:
-        trader.buy(price,time)
-        buy_price = price
-    elif points < 0:
-        trader.sell(price,time)
-        buy_price = 0
+#sell all
+for sym in symbol:
+    df = data[sym]['kl']
+    trader = data[sym]['trader']
+    price = df['Close'][-1]
+    time = df.index[-1]
+    coin = sym.replace('USDT', '')
+    trader.sell(price, time, coin)
 
+trader = Trader()
+wallet = trader.wallet
+wallet.initial_amount = 0
+wallet.setUSDT(0)
+for sym in symbol:
+    wlt = data[sym]['trader'].wallet
+    wallet.addUSDT(wlt.getUSDT())
+    wallet.reward += wlt.reward
+    wallet.initial_amount += wlt.initial_amount
+    wallet.loss += wlt.loss
+    wallet.trades = pd.concat([wallet.trades,wlt.trades]).reset_index(drop=True)
 
-
-trader.sell(kline['Close'][-1], kline.index[-1])
-kline['signal'] = signal
-tiempo = datetime.strptime(kline.index[-1], '%H:%M %d-%m-%Y') - datetime.strptime(kline.index[0], '%H:%M %d-%m-%Y')
+kl_aux = data[symbol[0]]['kl']
+tiempo = datetime.strptime(kl_aux.index[-1], '%H:%M %d-%m-%Y') - datetime.strptime(kl_aux.index[0], '%H:%M %d-%m-%Y')
 print('#'*50)
 print(f'SE SIMULARON {int(tiempo.days/365)} AÑOS, {int((tiempo.days % 365) / 31)} MESES Y{(tiempo.days % 365) % 31 + tiempo.seconds/86400: .2f} DÍAS')
 print('#'*50)
@@ -73,23 +78,7 @@ print('RENDIMIENTO')
 print(f'Diario:{rendimiento_diario: .2%}\nMensual:{rendimiento_diario * 30: .2%}\nAnual:{rendimiento_diario * 365: .2%}')
 print('#'*50)
 
-
-exit(0)
-trades = trader.getSummaryTrades()
-
-print(trades)
-
 exit(1)
-color = list()
-size = list()
-for i in kline['signal']:
-    color.append('red' if i < 0 else ('green' if i > 0 else 'black'))
-    size.append(25 if i != 0 else 0)
-fig, (ax1, ax2) = plt.subplots(nrows=2, ncols=1)
-ax1.plot(kline.index, kline['Close'], linewidth=1)
-ax1.scatter(kline.index, kline['Close'],color=color, s=size)
-ax2.plot(kline.index, kline['sm'],c='blue')
-ax2.plot(kline.index, kline['adx']*100-2000,c='red')
-ax2.axhline(y=5, xmin=0.1, xmax=0.9)
-plt.show()
+trades = trader.getSummaryTrades()
+print(trades)
 

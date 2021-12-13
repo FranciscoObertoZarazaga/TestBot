@@ -3,38 +3,45 @@ from Binance import Binance
 
 class Wallet:
 
-    def __init__(self,symbol):
-        self.reward = 0
-        self.crypto = 0
-        self.initial_amount = 100
-        self.usdt = self.initial_amount
+    def __init__(self):
         self.binance = Binance()
-        self.symbol = symbol
+        self.coins = self.binance.getAllCoins()
+        self.wallet = dict(zip(self.coins,[0] * len(self.coins)))
+        self.reward = 0
+        self.initial_amount = 100
+        self.addUSDT(self.initial_amount)
         self.buy_amount = 0
         self.buy_price = 0
         self.buy_time = None
         self.loss = 0
         self.trades = pd.DataFrame(columns=['final','inicial','reward'])
 
-    def pay(self, price,time, percentage=1):
-        amount = self.usdt * percentage
-        assert self.usdt >= amount
+    def pay(self, price,time, coin, percentage=1):
+        assert self.isPayable()
+        amount = self.getUSDT() * percentage
         self.buy_amount += amount
         self.buy_price = price
-        self.crypto += (amount * 0.999) / self.buy_price
-        self.usdt -= amount
+        self.addAmount(coin, (amount * 0.999) / self.buy_price)
+        self.addUSDT(-amount)
         self.buy_time = time
 
-    def collect(self, price, time):
-        assert self.crypto > 0
+    def collect(self, price, time, coin):
+        assert self.isPositive(coin)
         sell_price = price
-        reward = self.crypto * sell_price * 0.999 - self.buy_amount
-        self.usdt += reward + self.buy_amount
+        reward = self.getAmount(coin) * sell_price * 0.999 - self.buy_amount
+        self.addUSDT(reward + self.buy_amount)
         self.reward += reward
         self.loss += reward if reward < 0 else 0
-        trade = {'final': self.usdt, 'inicial': self.buy_amount, 'reward': reward, 'buy_price': self.buy_price, 'sell_price': price, 'buy_time': self.buy_time, 'sell_time': time}
+        trade = {'final': self.getUSDT(),
+                 'inicial': self.buy_amount,
+                 'reward': reward,
+                 'buy_price': self.buy_price,
+                 'sell_price': price,
+                 'buy_time': self.buy_time,
+                 'sell_time': time,
+                 'coin': coin}
         self.trades = self.trades.append(trade, ignore_index=True, )
-        self.crypto = 0
+        self.setAmount(coin, 0)
         self.buy_amount = 0
         return self.reward
 
@@ -53,10 +60,40 @@ class Wallet:
         msg = '=' * 50 + '\n' + "{:^50}".format('RESULTADO') + '\n' + '=' * 50 + '\n'
         ganancia_bruta = self.reward + abs(self.loss)
         tasa_de_aciertos = 100 * (1 - abs(self.loss) / (abs(self.loss) * 2 + self.reward))
-        tasa_de_ganancia = (self.usdt / self.initial_amount)
+        tasa_de_ganancia = (self.getUSDT() / self.initial_amount)
 
-        titulo = ['Monto Inicial', 'Monto Final', 'Crypto Final', 'Ganancia Bruta', 'Pérdida', 'Ganancia Neta', 'Acertabilidad','Multiplicador','N° de Trades', 'N° de Trades Positivos', 'N° de Trades Negativos', 'Tasa de Aciertos', 'Tasa Promedio', 'Tasa de Ganancia Promedio', 'Tasa de Pérdida Promedio','Rendimiendo']
-        valor = [self.initial_amount, self.usdt,self.crypto, ganancia_bruta,self.loss,self.reward,tasa_de_aciertos,tasa_de_ganancia,n_trades, n_positive_trades, n_negative_trades, n_negative_trades/n_positive_trades, mean_rate, positive_rate, negative_rate, self.rendimiento]
+        titulo = ['Monto Inicial',
+                  'Monto Final',
+                  'Crypto Final',
+                  'Ganancia Bruta',
+                  'Pérdida',
+                  'Ganancia Neta',
+                  'Acertabilidad',
+                  'Multiplicador',
+                  'N° de Trades',
+                  'N° de Trades Positivos',
+                  'N° de Trades Negativos',
+                  'Tasa de Aciertos',
+                  'Tasa Promedio',
+                  'Tasa de Ganancia Promedio',
+                  'Tasa de Pérdida Promedio',
+                  'Rendimiendo']
+        valor = [self.initial_amount,
+                 self.getUSDT(),
+                 self.getAmount('BTC'),
+                 ganancia_bruta,
+                 self.loss,
+                 self.reward,
+                 tasa_de_aciertos,
+                 tasa_de_ganancia,
+                 n_trades,
+                 n_positive_trades,
+                 n_negative_trades,
+                 n_negative_trades/n_positive_trades,
+                 mean_rate,
+                 positive_rate,
+                 negative_rate,
+                 self.rendimiento]
         unidad = ['U$DT', 'U$DT', 'BTC', 'U$DT', 'U$DT', 'U$DT', '%', '', '', '', '', 'N/P', '%', '%', '%', '%']
         for i,t in enumerate(titulo):
             msg += f'{t:<30}{valor[i]: >10.2f} {unidad[i]: <5}\n'
@@ -66,11 +103,29 @@ class Wallet:
     def get_reward(self):
         return self.reward
 
-    def isPayable(self):
-        return self.usdt > 0
+    def isPositive(self, coin):
+        return self.getAmount(coin) > 0
 
-    def isCollectible(self):
-        return self.crypto > 0
+    def isPayable(self):
+        return self.isPositive('USDT')
+
+    def addAmount(self,coin, amount):
+        self.wallet[coin] += amount
+
+    def setAmount(self, coin, amount):
+        self.wallet[coin] = amount
+
+    def getAmount(self,coin):
+        return self.wallet[coin]
+
+    def addUSDT(self, amount):
+        self.addAmount('USDT', amount)
+
+    def setUSDT(self, amount):
+        self.setAmount('USDT', amount)
+
+    def getUSDT(self):
+        return self.getAmount('USDT')
 
 
 

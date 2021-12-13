@@ -52,8 +52,8 @@ def WinStrategy(df, n):
     adx = df['adx']
     sm = df['sm']
     sma = df['sma']
-    ema = df['ema']
-    isSm = df['isSm']
+    di_pos = df['di+']
+    di_neg = df['di-']
     price = df['Close']
     isMin = adx[n] > adx[n-1] and adx[n-2] > adx[n-1]
     isMax = adx[n] < adx[n - 1] and adx[n - 2] < adx[n - 1]
@@ -68,10 +68,11 @@ def WinStrategy(df, n):
                 return 1
             return -1
 
-
+    '''
     if adx[n] < 30:
         if isUp and price[n-1] < sma[n-1] and isMagic:
             return 1
+    '''
 
     return 0
 
@@ -79,10 +80,10 @@ def WinStrategy(df, n):
 def StableSqueezeStrategy(df, n):
     adx = df['adx']
     sm = df['sm']
-    if adx[n] > 70:
-        return -1 if sm[n] > sm[n-1] else 1
-    elif adx[n] < 30:
-        return 1 if sm[n] > sm[n-1] else -1
+    sma = df['sma']
+    price = df['Close']
+    if adx[n] < 30:
+        return 1 if sm[n] > sm[n-1] or sma[n] > price[n] else -1
     return 0
 
 def GodStrategy(df, n):
