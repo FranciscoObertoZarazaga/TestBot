@@ -9,14 +9,14 @@ class Trader:
         self.indoor = False
         self.buy_price = 0
 
-    def buy(self,price, time, coin):
+    def buy(self,price, time, coin='BTC'):
         if self.wallet.isPayable():
             self.wallet.pay(price,time, coin)
             self.indoor = True
             self.buy_price = price
 
 
-    def sell(self,price, time, coin):
+    def sell(self,price, time, coin='BTC'):
         if self.wallet.isPositive(coin):
             reward = self.wallet.collect(price, time, coin)
             self.indoor = False

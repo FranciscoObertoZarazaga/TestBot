@@ -55,29 +55,34 @@ class HistoricalKlines:
         kline.dropna(inplace=True)
         self.klines = kline
 
-def getMultipleHistoricalKlines(symbols, start_str, end_str, interval):
-    kls = dict()
-    l = 0
-    for symbol in symbols:
-        src = f'klines/{symbol}_{start_str}_to_{end_str}_{interval}.csv'
-        hk = HistoricalKlines(symbol=symbol, start_str=start_str, end_str=end_str, interval=interval, src=src)
-        kl = hk.getKlines()
-        kls[symbol] = {'kl': kl}
-    kls = matchKL(kls, symbols)
-    l = len(kls[symbols[0]]['kl'])
-    return kls, l
 
-def cutKL(longKL, shortKL):
-    return longKL.loc[shortKL.index[0]:shortKL.index[-1]]
-
-def matchKL(kl,symbol):
-    for s1 in symbol:
-        for s2 in symbol:
-            kl1 = kl[s1]
-            kl2 = kl[s2]
-            if len(kl1) > len(kl2):
-                kl[s1] = cutKL(kl1, kl2)
-            elif len(kl1) < len(kl2):
-                kl[s2] = cutKL(kl2, kl1)
-
+def getHistoricalKlines(symbol, start_str, end_str, interval):
+    src = f'klines/{symbol}_{start_str}_to_{end_str}_{interval}.csv'
+    hk = HistoricalKlines(symbol=symbol, start_str=start_str, end_str=end_str, interval=interval, src=src)
+    kl = hk.getKlines()
     return kl
+
+def kline_fusion(long_data, short_data,):
+    group = dict()
+    for i, time1 in enumerate(long_data.index):
+        kline = dict()
+        long_time = datetime.strptime(time1, '%H:%M %d-%m-%Y')
+        subdata = short_data[short_data.index >= long_time]
+        if i >= len(long_data) - 1:
+            kline.update({'data': long_data.iloc[i], 'subdata': subdata})
+            group.update({long_time: kline})
+            continue
+        long_time_future = datetime.strptime(long_data.index[i + 1], '%H:%M %d-%m-%Y')
+        subdata = subdata[subdata.index < long_time_future]
+        kline.update({'data': long_data.iloc[i], 'subdata': subdata})
+        group.update({long_time: kline})
+    return group
+
+def get_subdata(data, i, subdata):
+    long_time = datetime.strptime(data.index[i-1], '%H:%M %d-%m-%Y')
+    subdata = subdata[subdata.index >= long_time]
+    if i >= len(data) - 1:
+        return subdata
+    long_time_future = datetime.strptime(data.index[i + 1], '%H:%M %d-%m-%Y')
+    subdata = subdata[subdata.index < long_time_future]
+    return subdata

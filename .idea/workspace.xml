@@ -2,37 +2,31 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="c38f358b-d00d-49a5-b1ef-6d1c04ffbf7e" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/TestBot.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/BotTradingLeo.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Binance.py" beforeDir="false" afterPath="$PROJECT_DIR$/Binance.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Heikin.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/HistoricalKlines.py" beforeDir="false" afterPath="$PROJECT_DIR$/HistoricalKlines.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Strategy.py" beforeDir="false" afterPath="$PROJECT_DIR$/Strategy.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Trader.py" beforeDir="false" afterPath="$PROJECT_DIR$/Trader.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Wallet.py" beforeDir="false" afterPath="$PROJECT_DIR$/Wallet.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/klines/15min_kline_btc.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/klines/1hour_kline_btc.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/klines/1hour_kline_btc_1year.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/klines/1hour_kline_btc_2year.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/klines/1hour_kline_btc_aux.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/klines/4hour_kline_btc.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/klines/4hour_kline_btc_1year.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/klines/4hour_kline_btc_2year.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/klines/4hour_kline_eth.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/klines/6hour_kline_btc.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/klines/6hour_kline_btc_1year.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/klines/6hour_kline_btc_2year.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/klines/8hour_kline_btc.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/klines/ADAUSDT_7 year ago_to_None_4h.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/klines/BTCUSDT_7 year ago_to_None_1h.csv" beforeDir="false" afterPath="$PROJECT_DIR$/klines/BTCUSDT_7 year ago_to_None_1h.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/klines/BTCUSDT_7 year ago_to_None_4h.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/klines/ETHUSDT_7 year ago_to_None_4h.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/klines/LTCUSDT_7 year ago_to_None_4h.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/klines/SOLUSDT_7 year ago_to_None_4h.csv" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -47,9 +41,9 @@
   </component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/main.py" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/HistoricalKlines.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Wallet.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Strategy.py" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/HistoricalKlines.py" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="ProjectId" id="21hb7vzT4QrZaDQhiW4H1NNezqu" />
   <component name="ProjectViewState">

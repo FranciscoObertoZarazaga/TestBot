@@ -5,68 +5,43 @@ from Trader import Trader
 from binance.enums import *
 from datetime import datetime
 from Strategy import *
+from Test import *
 import warnings
 warnings.filterwarnings("ignore")
 
 
-symbol = ['BTCUSDT']
-start_str = '7 year ago'
+symbol = 'BTCUSDT'
+start_str = '1 week ago'
 end_str = None
-interval = KLINE_INTERVAL_4HOUR
+interval = KLINE_INTERVAL_5MINUTE
 
-data, l = getMultipleHistoricalKlines(symbol, start_str, end_str, interval)
+data = getHistoricalKlines(symbol, start_str, end_str, interval)
 
-for sym in symbol:
-    data[sym]['trader'] = Trader()
+interval = KLINE_INTERVAL_1MINUTE
+subdata = getHistoricalKlines(symbol, start_str, end_str, interval)
+
+subdata.index = pd.to_datetime(subdata.index, format='%H:%M %d-%m-%Y')
+
+large = len(data)
+trader = Trader()
 
 buy_price = 0
-for i in range(l):
-    if i < 2 or i >= l:
+
+for i in range(large):
+    if i < 4 or i >= large:
         continue
 
-    for sym in symbol:
-        df = data[sym]['kl']
-        trader = data[sym]['trader']
-        coin = sym.replace('USDT','')
-        price = df['Close'][i]
-        #price = random.uniform(df['Low'][i],df['High'][i])
-        #price = (df['Low'][i]+df['High'][i]) / 2
-        time = df.index[i]
-        indoor = trader.indoor
+    macro = get_macro(data, i)
+    if macro:
+        subtrade(get_subdata(data, i, subdata), trader)
 
-        points = 0
-        points += WinStrategy(df, i)
-
-        if points > 0:
-            trader.buy(price, time, coin)
-            buy_price = price
-        elif points < 0:
-            trader.sell(price, time, coin)
-            buy_price = 0
 
 #sell all
-for sym in symbol:
-    df = data[sym]['kl']
-    trader = data[sym]['trader']
-    price = df['Close'][-1]
-    time = df.index[-1]
-    coin = sym.replace('USDT', '')
-    trader.sell(price, time, coin)
+price = data['Close'][-1]
+time = data.index[-1]
+trader.sell(price, time)
 
-trader = Trader()
-wallet = trader.wallet
-wallet.initial_amount = 0
-wallet.setUSDT(0)
-for sym in symbol:
-    wlt = data[sym]['trader'].wallet
-    wallet.addUSDT(wlt.getUSDT())
-    wallet.reward += wlt.reward
-    wallet.initial_amount += wlt.initial_amount
-    wallet.loss += wlt.loss
-    wallet.trades = pd.concat([wallet.trades,wlt.trades]).reset_index(drop=True)
-
-kl_aux = data[symbol[0]]['kl']
-tiempo = datetime.strptime(kl_aux.index[-1], '%H:%M %d-%m-%Y') - datetime.strptime(kl_aux.index[0], '%H:%M %d-%m-%Y')
+tiempo = datetime.strptime(time, '%H:%M %d-%m-%Y') - datetime.strptime(data.index[0], '%H:%M %d-%m-%Y')
 print('#'*50)
 print(f'SE SIMULARON {int(tiempo.days/365)} AÑOS, {int((tiempo.days % 365) / 31)} MESES Y{(tiempo.days % 365) % 31 + tiempo.seconds/86400: .2f} DÍAS')
 print('#'*50)
