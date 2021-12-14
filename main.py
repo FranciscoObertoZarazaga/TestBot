@@ -5,35 +5,35 @@ from Trader import Trader
 from binance.enums import *
 from datetime import datetime
 from Strategy import *
-from Test import *
 import warnings
 warnings.filterwarnings("ignore")
 
 
 symbol = 'BTCUSDT'
-start_str = '1 week ago'
+start_str = '7 year ago'
 end_str = None
-interval = KLINE_INTERVAL_5MINUTE
+interval = KLINE_INTERVAL_4HOUR
 
 data = getHistoricalKlines(symbol, start_str, end_str, interval)
-
-interval = KLINE_INTERVAL_1MINUTE
-subdata = getHistoricalKlines(symbol, start_str, end_str, interval)
-
-subdata.index = pd.to_datetime(subdata.index, format='%H:%M %d-%m-%Y')
 
 large = len(data)
 trader = Trader()
 
-buy_price = 0
-
 for i in range(large):
-    if i < 4 or i >= large:
+    if i < 2:
         continue
 
-    macro = get_macro(data, i)
-    if macro:
-        subtrade(get_subdata(data, i, subdata), trader)
+    points = WinStrategy(data, i)
+
+    price = data['Close'][i]
+    # price = random.uniform(df['Low'][i],df['High'][i])
+    # price = (df['Low'][i]+df['High'][i]) / 2
+    time = data.index[i]
+
+    if points > 0:
+        trader.buy(price, time)
+    elif points < 0:
+        trader.sell(price, time)
 
 
 #sell all
