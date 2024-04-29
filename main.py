@@ -1,59 +1,46 @@
-import random
+import threading
+import pandas
 import pandas as pd
+
 from HistoricalKlines import *
-from Trader import Trader
 from binance.enums import *
-from datetime import datetime
-from Strategy import *
 import warnings
+from Test import test
 warnings.filterwarnings("ignore")
 
+from Binance import WebSocketBinance
+ws = WebSocketBinance()
+ws.add('BTCUSDT', '1H')
+exit()
 
-symbol = 'BTCUSDT'
-start_str = '7 year ago'
-end_str = None
-interval = KLINE_INTERVAL_4HOUR
+'''print('Arbitraje')
+from Arbitraje import *
+'''
+print('Arbitraje triangular')
+from ArbitrajeTriangular import *
 
-data = getHistoricalKlines(symbol, start_str, end_str, interval)
+exit()
+bnc = Binance()
+coins = bnc.getAllCoinsWithUSDT()
+df = pandas.DataFrame(columns=['symbol', 'points'])
+for c3 in coins:
+    symbol = c3 + 'USDT'
+    print('-' * 50, f'\n{symbol}')
+    start_str = '1 week ago'
+    end_str = None
+    interval = KLINE_INTERVAL_5MINUTE
 
-large = len(data)
-trader = Trader()
-
-for i in range(large):
-    if i < 2:
+    try:
+        data = getHistoricalKlines(symbol, start_str, end_str, interval)
+    except:
         continue
 
-    points = WinStrategy(data, i)
+    try:
+        points = test(data, imprimir_resultados=0)
+    except:
+        continue
+    aux = pd.DataFrame({'symbol': symbol, 'points': points}, index=[0])
+    df = pd.concat([df, aux], ignore_index=True)
 
-    price = data['Close'][i]
-    # price = random.uniform(df['Low'][i],df['High'][i])
-    # price = (df['Low'][i]+df['High'][i]) / 2
-    time = data.index[i]
-
-    if points > 0:
-        trader.buy(price, time)
-    elif points < 0:
-        trader.sell(price, time)
-
-
-#sell all
-price = data['Close'][-1]
-time = data.index[-1]
-trader.sell(price, time)
-
-tiempo = datetime.strptime(time, '%H:%M %d-%m-%Y') - datetime.strptime(data.index[0], '%H:%M %d-%m-%Y')
-print('#'*50)
-print(f'SE SIMULARON {int(tiempo.days/365)} AÑOS, {int((tiempo.days % 365) / 31)} MESES Y{(tiempo.days % 365) % 31 + tiempo.seconds/86400: .2f} DÍAS')
-print('#'*50)
-print(trader)
-
-rendimiento_diario = trader.wallet.rendimiento / (tiempo.days * 100)
-print('#'*50)
-print('RENDIMIENTO')
-print(f'Diario:{rendimiento_diario: .2%}\nMensual:{rendimiento_diario * 30: .2%}\nAnual:{rendimiento_diario * 365: .2%}')
-print('#'*50)
-
-exit(1)
-trades = trader.getSummaryTrades()
-print(trades)
-
+df = df.sort_values(by='points', axis=0)
+print(df)

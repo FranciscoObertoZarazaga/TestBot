@@ -1,7 +1,7 @@
 import pandas as pd
 from datetime import datetime
 from Binance import Binance
-from SqueezeMomentumIndicator import *
+from indicators.SqueezeMomentumIndicator import *
 from Indicator import *
 import os
 
@@ -47,11 +47,14 @@ class HistoricalKlines:
         kline['sm'] = SqueezeMomentumIndicator(kline)
         kline['isSm'] = isSqueeze(kline)
         kline['adx'], kline['di+'], kline['di-'] = adxIndicator(kline)
-        kline['rsi'] = rsiIndicator(kline, 20)
-        kline['sma'] = smaIndicator(kline, 10)
-        kline['sma55'] = smaIndicator(kline, 55)
-        kline['ema'] = emaIndicator(kline, 10)
+        kline['rsi'] = rsiIndicator(kline, 2)
+        kline['stochrsi'] = stochrsiIndicator(kline)
+        kline['psar'] = parabolicsarIndicator(kline)
+        kline['sma'] = smaIndicator(kline, 200)
+        kline['ema'] = emaIndicator(kline, 200)
         kline['bbh'], kline['bbm'], kline['bbl'] = bollingerBandsIndicator(kline)
+        kline['atr'] = atrIndicator(kline)
+        kline['macd'], kline['macd_signal'] = macdIndicator(kline)
         kline.dropna(inplace=True)
         self.klines = kline
 

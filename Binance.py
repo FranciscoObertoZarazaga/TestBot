@@ -25,6 +25,21 @@ class Binance:
             coins.append(coin['coin'])
         return coins
 
+    def getAllCoinsWith(self, fiat):
+        ticker = self.client.get_all_tickers()
+        coins = list()
+        for symbol in ticker:
+            coin = symbol['symbol']
+            if fiat == coin[-(len(fiat)):]:
+                coins.append(symbol['symbol'].replace(fiat, ''))
+        return coins
+
+    def getAllCoinsWithUSDT(self):
+        return self.getAllCoinsWith('USDT')
+
+    def getAllCoinsWithBTC(self):
+        return self.getAllCoinsWith('BTC')
+
     def getClient(self):
         return self.client
 
@@ -36,7 +51,7 @@ class Binance:
     # El Ask price es el precio mínimo al que un oferente está dispuesto a vender
     def getOrderBook(self,symbol):
         try:
-            return self.client.get_order_book(symbol=symbol,limit="1000")
+            return self.client.get_order_book(symbol=symbol, limit="1")
         except:
             self.reconnect()
             return self.getOrderBook(symbol)
@@ -48,14 +63,25 @@ class Binance:
             self.reconnect()
             return self.get_price(symbol)
 
-    def get_price(self,symbol):
+    def get_price(self, symbol):
         try:
-            order_book = self.client.get_order_book(symbol=symbol,limit="1")
+            order_book = self.client.get_order_book(symbol=symbol, limit="1")
             #return buy_price, sell_price
             return float(order_book['asks'][0][0]), float(order_book['bids'][0][0])
-        except:
+        except ConnectionError:
             self.reconnect()
             return self.get_price(symbol)
+        except IndexError as e:
+            return None, None
+
+    def is_enable(self, symbol):
+        return self.client.get_symbol_info(symbol)['status'] == 'TRADING'
+
+    def are_enable(self, symbols, i=0):
+        if len(symbols) == i+1:
+            return self.is_enable(symbols[i])
+        return self.is_enable(symbols[i]) and self.are_enable(symbols, i+1)
+
 
     def get_historical_k_lines(self,symbol,interval,start_str,end_str=None):
         return self.client.get_historical_klines(symbol, interval, start_str,end_str)
@@ -63,13 +89,16 @@ class Binance:
     def get_k_lines(self,symbol,interval):
         return self.client.get_klines(symbol=symbol, interval=interval)
 
+    def get_symbol_info(self, symbol):
+        return self.client.get_symbol_info(symbol)
+
     def reconnect(self,n=1):
         try:
             if n==1:
                 print("Reconectando")
             self.getStatus()
         except:
-            time.sleep(10)
+            time.sleep(1)
             self.reconnect(0)
 
     def alert(self,msg):
@@ -83,11 +112,12 @@ class WebSocketBinance:
         self.ws.start()
         self.observers = list()
 
-    def subscribe(self,observer):
+    def subscribe(self, observer):
         self.observers.append(observer)
 
-    def notify(self,data):
+    def notify(self, data):
+        print(data)
         for observer in self.observers: observer.update(data)
 
-    def add(self,symbol,interval):
-        self.ws.start_kline_socket(callback=self.notify, symbol=symbol,interval=interval)
+    def add(self, symbol, interval):
+        self.ws.start_kline_socket(callback=self.notify, symbol=symbol, interval=interval)

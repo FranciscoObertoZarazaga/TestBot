@@ -1,3 +1,5 @@
+import pandas as pd
+
 from Binance import *
 from Wallet import *
 import numpy as np
@@ -38,6 +40,7 @@ class Trader:
     def getSummaryTrades(self, negative_only=False):
         trades = self.wallet.trades
         trades = trades[trades['reward'] < 0] if negative_only else trades
+        trades.to_csv('trades.csv')
         titulos = ['COMPRA', 'VENTA']
         columnas = ['Monto', 'Precio', 'Fecha y Hora']
         msg = '\n' + '_' * 132 + '\n'
