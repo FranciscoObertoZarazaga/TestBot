@@ -6,7 +6,7 @@ class Wallet:
     def __init__(self):
         self.binance = Binance()
         self.coins = self.binance.getAllCoins()
-        self.wallet = dict(zip(self.coins,[0] * len(self.coins)))
+        self.wallet = dict(zip(self.coins, [0] * len(self.coins)))
         self.reward = 0
         self.initial_amount = 100
         self.addUSDT(self.initial_amount)
@@ -16,13 +16,13 @@ class Wallet:
         self.loss = 0
         self.trades = pd.DataFrame(columns=['final','inicial','reward'])
 
-    def pay(self, price,time, coin, percentage=1):
-        assert self.isPayable()
-        amount = self.getUSDT() * percentage
-        self.buy_amount += amount
+    def pay(self, price, time, coin, percentage=1, fiat='USDT'):
+        assert self.isPayable(fiat)
+        amount = self.getAmount(fiat) * percentage
+        self.buy_amount = amount if fiat == 'USDT' else amount * self.binance.get_mean(f'{fiat}USDT')
         self.buy_price = price
         self.addAmount(coin, (amount * 0.999) / self.buy_price)
-        self.addUSDT(-amount)
+        self.addAmount(fiat, -amount)
         self.buy_time = time
 
     def collect(self, price, time, coin):
@@ -58,8 +58,12 @@ class Wallet:
 
 
         msg = '=' * 50 + '\n' + "{:^50}".format('RESULTADO') + '\n' + '=' * 50 + '\n'
+        print(self.reward, self.loss)
         ganancia_bruta = self.reward + abs(self.loss)
-        tasa_de_aciertos = 100 * (1 - abs(self.loss) / (abs(self.loss) * 2 + self.reward))
+        try:
+            tasa_de_aciertos = 100 * (1 - abs(self.loss) / (abs(self.loss) * 2 + self.reward))
+        except ZeroDivisionError:
+            return "NO SE REALIZÓ NINGÚN TRADE."
         tasa_de_ganancia = (self.getUSDT() / self.initial_amount)
 
         titulo = ['Monto Inicial',
@@ -106,8 +110,8 @@ class Wallet:
     def isPositive(self, coin):
         return self.getAmount(coin) > 0
 
-    def isPayable(self):
-        return self.isPositive('USDT')
+    def isPayable(self, coin='USDT'):
+        return self.isPositive(coin)
 
     def addAmount(self,coin, amount):
         self.wallet[coin] += amount
